@@ -242,4 +242,98 @@ unique(factor(covid$Reparto))
 #sistemare i nomi tamponi 
 #n tamponi eseguiti per reparto e per anno
 
+esamiperanno <- group_by(covid, anno, Tot_Eseguiti)
+
+install.packages(c("tidyverse", "readxl", "here", "janitor", "openxlsx", "gt", "knit", "rmarkdown"))
        
+file.edit("~/.Rprofile")
+
+#PROVE ESERCIZI
+esamiperanno <- group_by(covid, anno, Tot_Eseguiti)
+view (esamiperanno)
+View (esamiperanno)
+esamiperanno <- select(covid, Tot_Eseguiti, anno)
+View(esamiperanno)
+pivotesamianno <- pivot_wider(cols = 1:2, names_to = "anno", values_to = "esami_eseguiti")
+esamiperanno %>% 
+  mutate(anno = as.numeric(anno))
+pivotesamianno <- pivot_longer(esamiperanno, cols = 1:2, names_to = "anno", values_to = "esami_eseguiti")
+glimpse(esamiperanno)
+View(esamiperanno)
+pivotesamianno <- pivot_wider(esamiperanno, names_from = "anno", values_from = "Tot_Eseguiti", values_fn = sum) %>%  View()
+esamiperanno %>% 
+  mutate(Tot_Eseguiti = replace(Tot_Eseguiti, Tot_Eseguiti %in% c("NA"), NA ))
+unique(esamiperanno$Tot_Eseguiti)  
+esamiperanno %>% 
+  summarize(esamiperanno,
+                somma = sum(Tot_Eseguiti, na.rm = T)) %>% View()
+is.na(esamiperanno$Tot_Eseguiti)
+anno2020 <- filter(esamiperanno, anno == "2020")
+View(anno2020)
+sum(anno2020$Tot_Eseguiti, na.rm = TRUE)
+
+#esercizio 1_ esami per anno
+esamiperanno <- select(covid, Tot_Eseguiti, anno) %>% 
+esamiperanno <- na.omit(esamiperanno) %>% 
+pivotesamianno <- pivot_wider(esamiperanno, names_from = "anno", values_from = "Tot_Eseguiti", values_fn = sum) %>% 
+  write.xlsx(file = "pivotesamiperanno.xlsx")
+
+#esercizio 2_ esami reparto per anno
+repartoperanno <- select(covid, Tot_Eseguiti, anno, Reparto)
+View(repartoperanno)
+repartoperanno <- na.omit(repartoperanno)
+pivot_wider(repartoperanno, names_from = Reparto, anno , values_from = Tot_Eseguiti, values_fn = sum) %>% 
+  write.xlsx(file = "pivotesamiperrepartp.xlsx")
+
+#esercizio 3_esami per provincia
+esamiperprovincia <- select(covid, Tot_Eseguiti, Provincia)
+esamiperprovincia <- na.omit(esamiperprovincia)
+View(esamiperprovincia)
+pivotesamiperprovincia <- pivot_wider(esamiperprovincia, names_from = "Provincia", values_from = "Tot_Eseguiti", values_fn = sum) %>% 
+    write.xlsx(file = "pivotesamiperprovincia.xlsx")
+
+#esercizio 4_esami ese
+esamiperagenteeziologico <- select(covid, Tot_Eseguiti, Reparto, anno, Prova)
+esamiperprovapcr <- filter(esamiperagenteeziologico, Prova == "SARS-CoV-2: agente eziologico") 
+esamiperprovapcr <- na.omit(esamiperprovapcr)
+pivot_wider(esamiperprovapcr, names_from = Reparto, anno , values_from = Tot_Eseguiti, values_fn = sum) %>% 
+  write.xlsx(file = "pivotesamiagenteeziologico.xlsx")
+
+#esercizio 5_prove per prova e per anno
+esamiprova <- select(covid, Tot_Eseguiti, Prova, anno)
+esamiprova <- na.omit(esamiprova)
+pivot_wider (esamiprova, names_from = anno, Prova , values_from = Tot_Eseguiti, values_fn = sum) %>% 
+  write.xlsx(file="pivot_ex5.xlsx")
+
+#esercizio 6_esami per materiale
+esamipermateriale <- select(covid, Tot_Eseguiti, Materiale)
+
+unique(esamipermateriale$Materiale)
+
+esamipermaterialesistemato <- mutate(esamipermateriale, Materiale = if_else(Materiale %in% c("TAMPONI", "TAMPOE"), "TAMPONE", Materiale),
+       Materiale = if_else(Materiale %in% c("SALIVARI"), "SALIVA", Materiale), 
+       Materiale = if_else(Materiale %in% c("RNA"), "RNA SARS-CoV-2", Materiale), 
+       Materiale = if_else(Materiale %in% c("ALTRI MATERIALI", "materiale vari"),"VARI", Materiale))
+
+unique(esamipermaterialesistemato$Materiale)
+
+esamipermaterialesistemato <- na.omit(esamipermaterialesistemato)
+
+pivot_wider (esamipermaterialesistemato, names_from = Materiale, values_from= Tot_Eseguiti, values_fn = sum) %>% 
+  write.xlsx(file = "ex6.xlsx")
+
+#Esercizio 7_numero dei differenti tipi di materiale
+unique(esamipermaterialesistemato$Materiale)
+
+#Esercizio 8_Numero comuni
+numerocomuni <- select(covid, Comune)
+unique(numerocomuni$Comune)
+
+numerocomunisistemato <- mutate(numerocomuni, Comune = if_else(Comune %in% c("Non Definito"), NA, Comune))
+unique(numerocomunisistemato$Comune)
+
+#Esercizio 8_Numero comunferenti
+conferenti <- select(covid, Conferente)
+unique(conferenti$Conferente)
+
+
